@@ -1,0 +1,20 @@
+{
+  "name": "autonomys-task-contract",
+  "version": "1.0.0",
+  "description": "Smart contracts for decentralized task management using Autonomys SDK",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0",
+    "@autonomys/auto-utils": "latest",
+    "@autonomys/auto-consensus": "latest",
+    "@autonomys/auto-drive": "latest"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "hardhat": "^2.17.0"
+  }
+} 

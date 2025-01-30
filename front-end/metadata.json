@@ -1,0 +1,20 @@
+{
+  "title": "Test Task Title",
+  "description": "This is a test task description with multiple paragraphs.\n\nIt includes details about what needs to be done.",
+  "images": [
+    {
+      "cid": "bafkr6id6hil6rcihhqnkvo66kh6ogd3hqlbl4uhveuit7jatp5fa2kjmhm",
+      "label": "Test image 1"
+    },
+    {
+      "cid": "bafkr6id6hil6rcihhqnkvo66kh6ogd3hqlbl4uhveuit7jatp5fa2kjmhm",
+      "label": "Test image 2" 
+    }
+  ],
+  "options": ["Option 1", "Option 2", "Option 3"],
+  "creator": "0x1234567890123456789012345678901234567890",
+  "totalReward": "1000000000000000000",
+  "deadline": 1707955199,
+  "tokenAddress": "0x2345678901234567890123456789012345678901",
+  "createdAt": 1705311000
+}
