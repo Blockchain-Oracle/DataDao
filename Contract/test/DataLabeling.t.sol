@@ -3,14 +3,17 @@ pragma solidity ^0.8.23;
 import {Test} from "forge-std/Test.sol";
 import {DataLabelingPlatform} from "../src/DataLabelingPlatform.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {PerformanceNFT} from "../src/PerformanceNft.sol";
 
 contract DataLabelingTest is Test {
     DataLabelingPlatform dataLabelingPlatform;
     ERC20Mock token;
     uint256 private constant DEPOSIT_AMOUNT = 1 ether;
     uint256 private constant TASK_REWARD_AMOUNT = 0.5 ether;
+    address NFTPerformance;
     address User1 = makeAddr("User1");
     address User2 = makeAddr("User2");
+    string private constant BASE_ENDPOINT="localhost:3000/api/nft/";
 
     event TokensDeposited(address indexed user, uint256 indexed amount);
     event TaskCreated(
@@ -43,13 +46,13 @@ contract DataLabelingTest is Test {
 
     function setUp() public {
         token = new ERC20Mock();
-
-        dataLabelingPlatform = new DataLabelingPlatform(address(token));
+        NFTPerformance = address(new PerformanceNFT(address(dataLabelingPlatform),BASE_ENDPOINT));
+        dataLabelingPlatform = new DataLabelingPlatform(address(token),NFTPerformance);
     }
 
     function test_constructor_revert_if_token_address_is_zero() public {
         vm.expectRevert(DataLabelingPlatform.DataLabelingPlatform__InvalidTokenAddress.selector);
-        new DataLabelingPlatform(address(0));
+        new DataLabelingPlatform(address(0),NFTPerformance);
     }
 
     function test_DataLabel_Cant_Receive_ETH() public {
