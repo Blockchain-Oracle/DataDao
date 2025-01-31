@@ -15,8 +15,6 @@ export default function ProfilePage() {
   const { profile, saveProfile, isLoading } = useProfile();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
   const handleProfileUpdate = async (formData: FormData) => {
     try {
       setIsUpdating(true);
@@ -42,9 +40,8 @@ export default function ProfilePage() {
           throw new Error("Failed to upload avatar");
         }
 
-        const { cid, url } = await response.json();
+        const { cid } = await response.json();
         avatarCid = cid;
-        setAvatarUrl(url);
       }
 
       const profileData = {
@@ -89,7 +86,7 @@ export default function ProfilePage() {
       profile={profile}
       isUpdating={isUpdating}
       onUpdateProfile={handleProfileUpdate}
-      avatarUrl={avatarUrl}
+
     />
   );
 }

@@ -33,14 +33,15 @@ export function useProfile() {
       try {
         setIsLoading(true);
         const savedCid = localStorage.getItem(`profile-cid-${address}`);
-        
+        console.log("savedCid", savedCid);
         if (savedCid) {
           //todo need to get the format for profile cid
-          const response = await fetch(`api/profile/metadata?cid=${savedCid}`);
+          const response = await fetch(`/api/profile/metadata?cid=${savedCid}`);
           if (!response.ok) {
             throw new Error("Failed to fetch profile");
           }
           const profileData = await response.json();
+          console.log("profileData", profileData);
           setProfile(profileData);
           setProfileCid(savedCid);
         }

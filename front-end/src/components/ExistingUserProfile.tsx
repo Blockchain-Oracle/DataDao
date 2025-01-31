@@ -8,7 +8,7 @@ import { PersonalInformation } from "./PersonalInformation";
 interface ExistingUserProfileProps {
   profile: ProfileData;
   isUpdating: boolean;
-  onUpdateProfile: (formData: FormData) => Promise<void>;
+    onUpdateProfile: (formData: FormData) => Promise<void>;
 }
 
 export function ExistingUserProfile({

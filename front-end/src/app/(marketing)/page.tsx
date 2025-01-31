@@ -48,7 +48,7 @@ export default function Home() {
                   size="lg"
                   onClick={
                     isConnected
-                      ? () => (window.location.href = "/tasks/browse")
+                      ? () => (window.location.href = "/dashboard/tasks")
                       : openConnectModal
                   }
                   className="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-primary to-secondary hover:opacity-90"
@@ -58,9 +58,8 @@ export default function Home() {
                 </Button>
               )}
             </ConnectButton.Custom>
-            <Link href="/tasks/browse">
+            <Link href="/dashboard/tasks">
               <Button
-                variant="outline"
                 size="lg"
                 className="w-full sm:w-auto border-primary/20 hover:bg-primary/10"
               >

@@ -103,9 +103,11 @@ telegram.command('start', async (ctx) => {
   ctx.reply('Welcome to Data DAO! You will now receive notifications for new tasks.');
 });
 
-// Start the bots
-export const initializeNotificationClients = () => {
-  discord.login(process.env.DISCORD_BOT_TOKEN);
+// Start the bots and ensure Discord is logged in before handling requests
+let discordReady = false;
+export const initializeNotificationClients = async () => {
+  await discord.login(process.env.DISCORD_BOT_TOKEN);
+  discordReady = true;
   telegram.launch();
 };
 
@@ -130,6 +132,12 @@ export async function POST(req: Request) {
 
     // Handle Discord notifications
     if (discordId && preferences.discord) {
+      if (!discordReady) {
+        return NextResponse.json(
+          { error: "Discord bot not ready. Please try again in a moment." },
+          { status: 503 }
+        );
+      }
       try {
         const user = await discord.users.fetch(discordId);
         await user.send("You have successfully enabled Discord notifications!");

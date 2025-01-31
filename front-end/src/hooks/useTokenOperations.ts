@@ -14,7 +14,7 @@ export function useTokenOperations(address?: `0x${string}`) {
     useWriteContract();
   const { data: approveHash, writeContract: writeApprove } = useWriteContract();
   const { data: depositHash, writeContract: writeDeposit } = useWriteContract();
-
+  const { data: mintHash, writeContract: writeMint } = useWriteContract();
   // Get token allowance
   console.log("address", address);
   console.log("wagmiContractConfig.address", wagmiContractConfig.address);
@@ -66,6 +66,13 @@ export function useTokenOperations(address?: `0x${string}`) {
     });
   };
 
+  const mintTokens=async (amount: string) => {
+    await writeMint({
+      ...wagmiERC20MockConfig, // Changed to use ERC20 config instead of contract config
+      functionName: "mint",
+      args: [wagmiContractConfig.address, parseEther(amount)],
+    });
+  };
   // Watch token deposit events
   useWatchContractEvent({
     ...wagmiContractConfig,
@@ -100,11 +107,14 @@ export function useTokenOperations(address?: `0x${string}`) {
     withdrawHash,
     approveHash,
     depositHash,
+    mintHash,
     allowance,
     balance,
     tokenBalance,
     withdrawTokens,
     approveTokens,
     depositTokens,
+    mintTokens
+
   };
 }

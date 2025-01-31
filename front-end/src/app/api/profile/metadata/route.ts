@@ -26,7 +26,7 @@ export async function GET(req: Request): Promise<NextResponse<ProfileData | { er
   try {
     const url = new URL(req.url);
     const cid = url.searchParams.get("cid");
-
+    console.log("cid", cid);
     if (!cid) {
       return NextResponse.json({ error: "CID is required" }, { status: 400 });
     }
@@ -34,7 +34,7 @@ export async function GET(req: Request): Promise<NextResponse<ProfileData | { er
     const fileBuffer = await fetchFromAutoDrive(cid);
     const jsonString = fileBuffer.toString("utf-8");
     const profileData = JSON.parse(jsonString.trim()) as ProfileData;
-
+    console.log("profileData", profileData);
     return NextResponse.json(profileData);
   } catch (error) {
     console.error("Error processing request:", error);
