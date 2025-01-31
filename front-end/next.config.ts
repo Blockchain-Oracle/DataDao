@@ -5,20 +5,12 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
    
   },
+  outputFileTracing: true,
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-
-  module: {
-    rules: [
-      {
-        test: /\.node$/,
-        loader: "node-loader",
-      },
-    ],
   },
 };
 
