@@ -23,7 +23,7 @@ export const wagmiERC20MockConfig = {
 } as const;
 export const LOCAL_RPC_URL = "http://127.0.0.1:8545";
 
-
+//taurs mainnet PerformanceNFT 0xEd51ca2ebB382E6f28aCc011C13b516D458671C3
 export const performanceNftConfig = {
   address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" as Address,
   abi: PerformanceNFTABI,
