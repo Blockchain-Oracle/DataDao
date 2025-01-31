@@ -1,29 +1,48 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { uploadProfile, fetchProfile, ProfileData } from "@/lib/autoDrive";
 import { useToast } from "@/hooks/use-toast";
+
+export interface ProfileData {
+  address: `0x${string}`;
+  username?: string;
+  bio?: string;
+  avatar?: string;
+  discordId?: string;
+  telegramHandle?: string;
+  notificationPreferences: {
+    discord: boolean;
+    telegram: boolean;
+    email: boolean;
+  };
+  updatedAt: string;
+}
+
 
 export function useProfile() {
   const { address } = useAccount();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [profileCid, setProfileCid] = useState<string | null>(null);
 
-  // Load profile from Auto Drive
+  // Load profile from Auto Drive using CID
   useEffect(() => {
     const loadProfile = async () => {
       if (!address) return;
 
       try {
         setIsLoading(true);
-        // Get CID from local storage
-        const profileCid = localStorage.getItem(`profile-${address}`);
-
-        if (profileCid) {
-          const profileData = await fetchProfile(profileCid);
-          if (profileData) {
-            setProfile(profileData);
+        const savedCid = localStorage.getItem(`profile-cid-${address}`);
+        
+        if (savedCid) {
+          //todo need to get the format for profile cid
+          const response = await fetch(`api/profile/metadata?cid=${savedCid}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch profile");
           }
+          const profileData = await response.json();
+          setProfile(profileData);
+          setProfileCid(savedCid);
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -40,82 +59,88 @@ export function useProfile() {
     loadProfile();
   }, [address]);
 
-  // const updateNotificationPreferences = async (profile: ProfileData) => {
-  //   try {
-  //     const response = await fetch("/api/notifications/preferences", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         discordId: profile.discordId,
-  //         telegramHandle: profile.telegramHandle,
-  //         preferences: profile.notificationPreferences,
-  //       }),
-  //     });
+  const updateNotificationPreferences = async (profile: ProfileData) => {
+    try {
+      const response = await fetch("/api/notifications/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          discordId: profile.discordId,
+          telegramHandle: profile.telegramHandle,
+          preferences: profile.notificationPreferences,
+        }),
+      });
 
-  //     if (!response.ok) {
-  //       const data = await response.json();
-  //       throw new Error(
-  //         data.error || "Failed to update notification preferences"
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating notification preferences:", error);
-  //     throw error;
-  //   }
-  // };
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update notification preferences");
+      }
+    } catch (error) {
+      console.error("Error updating notification preferences:", error);
+      throw error;
+    }
+  };
 
-  // Save profile to Auto Drive
-  // const saveProfile = async (profileData: Partial<ProfileData>) => {
-  //   if (!address) return;
+  const saveProfile = async (profileData: Partial<ProfileData>) => {
+    if (!address) return;
 
-  //   try {
-  //     const updatedProfile: ProfileData = {
-  //       ...profile,
-  //       ...profileData,
-  //       address,
-  //       notificationPreferences: {
-  //         discord: profileData.notificationPreferences?.discord || false,
-  //         telegram: profileData.notificationPreferences?.telegram || false,
-  //         email: profileData.notificationPreferences?.email || false,
-  //       },
-  //       updatedAt: new Date().toISOString(),
-  //     };
+    try {
+      const updatedProfile: ProfileData = {
+        ...profile,
+        ...profileData,
+        address,
+        notificationPreferences: {
+          discord: profileData.notificationPreferences?.discord || false,
+          telegram: profileData.notificationPreferences?.telegram || false,
+          email: false,
+        },
+        updatedAt: new Date().toISOString(),
+      };
 
-  //     // Upload to Auto Drive
-  //     const cid = await uploadProfile(updatedProfile);
+      // Upload to Auto Drive through API route
+      const response = await fetch("/api/upload/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedProfile),
+      });
 
-  //     // Store CID in local storage
-  //     localStorage.setItem(`profile-${address}`, cid);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to upload profile");
+      }
 
-  //     setProfile(updatedProfile);
+      const { cid } = await response.json();
+      localStorage.setItem(`profile-cid-${address}`, cid);
+      
+      setProfile(updatedProfile);
+      setProfileCid(cid);
 
-  //     // Update notification service if needed
-  //     if (profileData.discordId || profileData.telegramHandle) {
-  //       await updateNotificationPreferences(updatedProfile);
-  //     }
+      // Update notification preferences if changed
+      if (profileData.discordId || profileData.telegramHandle) {
+        await updateNotificationPreferences(updatedProfile);
+      }
 
-  //     toast({
-  //       title: "Profile updated",
-  //       description: "Your profile has been successfully saved",
-  //     });
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully saved",
+      });
 
-  //     return cid;
-  //   } catch (error) {
-  //     console.error("Error saving profile:", error);
-  //     toast({
-  //       title: "Error saving profile",
-  //       description: "Failed to save profile data",
-  //       variant: "destructive",
-  //     });
-  //     throw error;
-  //   }
-  // };
+      return true;
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error saving profile",
+        description: "Failed to save profile data",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
 
   return {
     profile,
     isLoading,
-    // saveProfile,
+    saveProfile,
+    profileCid,
   };
 }

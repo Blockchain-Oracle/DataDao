@@ -34,6 +34,12 @@ export function useTokenOperations(address?: `0x${string}`) {
     args: address ? [address] : undefined,
   });
 
+  const { data: tokenBalance } = useReadContract({
+    ...wagmiERC20MockConfig,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+  });
+
   console.log("balance", balance);
 
   const withdrawTokens = (amount: bigint) => {
@@ -96,6 +102,7 @@ export function useTokenOperations(address?: `0x${string}`) {
     depositHash,
     allowance,
     balance,
+    tokenBalance,
     withdrawTokens,
     approveTokens,
     depositTokens,

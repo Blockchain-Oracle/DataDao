@@ -34,7 +34,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
   const [isApproving, setIsApproving] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
 
-  const { allowance, balance, approveTokens, depositTokens, approveHash } =
+  const { allowance, balance, approveTokens, depositTokens, tokenBalance } =
     useTokenOperations(address);
 
   // Watch approval events
@@ -115,6 +115,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
   const formattedBalance = balance ? formatEther(balance as bigint) : "0";
   const formattedAllowance = allowance ? formatEther(allowance as bigint) : "0";
+  const formattedTokenBalance = tokenBalance ? formatEther(tokenBalance as bigint) : "0";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -148,7 +149,17 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
               <div className="flex justify-between items-center">
                 <span className="text-sm flex items-center gap-2">
                   <Info className="h-4 w-4" />
-                  Available Balance
+                  Wallet Balance
+                </span>
+                <span className="font-mono font-medium">
+                  {formattedTokenBalance} tokens
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between items-center">
+                <span className="text-sm flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Contract Balance
                 </span>
                 <span className="font-mono font-medium">
                   {formattedBalance} tokens

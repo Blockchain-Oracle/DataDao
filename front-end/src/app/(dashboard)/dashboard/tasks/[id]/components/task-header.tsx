@@ -103,7 +103,7 @@ export function TaskHeader({ task, actions }: TaskHeaderProps) {
         >
           <ExternalLink className="h-4 w-4" />
         </Button>
-        {task.isUserCreator && task.status === "completed" && (
+        {task.status === "completed" && (
           <Button
             onClick={handleDistribute}
             disabled={isDistributing}

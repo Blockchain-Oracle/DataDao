@@ -46,7 +46,7 @@ contract DataLabelingTest is Test {
 
     function setUp() public {
         token = new ERC20Mock();
-        NFTPerformance = address(new PerformanceNFT(address(dataLabelingPlatform),BASE_ENDPOINT));
+        NFTPerformance = address(new PerformanceNFT(BASE_ENDPOINT));
         dataLabelingPlatform = new DataLabelingPlatform(address(token),NFTPerformance);
     }
 

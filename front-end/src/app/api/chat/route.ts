@@ -48,8 +48,12 @@ export async function POST(req: Request) {
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+const geminiApikey=process.env.GEMINI_APIKEY;
+if(geminiApikey == undefined){
+  throw new Error("invalid gemini api key");
+}
 // Replace with your actual API key
-const genAI = new GoogleGenerativeAI("AIzaSyDiKiw745fX7QawXF0jTnT7bCxVWlV5sKA");
+const genAI = new GoogleGenerativeAI(geminiApikey);
 
 async function run(userMessages?: string, history: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });

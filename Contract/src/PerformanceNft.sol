@@ -4,12 +4,12 @@ pragma solidity ^0.8.23;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title PerformanceNFT
  * @notice NFT contract that evolves based on user performance in the DataLabelingPlatform
  */
-contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard {
+contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
     // Add error for invalid quality score
     error PerformanceNFT__InvalidQualityScore();
 
@@ -34,7 +34,7 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard {
 
     // State variables
     uint256 private _tokenIdCounter;
-    address public immutable dataLabelingPlatform;
+    address public  dataLabelingPlatform;
     mapping(address => UserPerformance) public userPerformance;
     mapping(uint256 => NFTMetadata) public nftMetadata;
 
@@ -56,16 +56,22 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard {
     event ConsecutiveHighScoreAchieved(address indexed user, uint256 count);
 
     constructor(
-        address _dataLabelingPlatform,
         string memory _baseEndpoint
-    ) ERC721("Performance NFT", "PERF") {
-        dataLabelingPlatform = _dataLabelingPlatform;
+    ) ERC721("Performance NFT", "PERF") Ownable(msg.sender) {
         baseEndpoint = _baseEndpoint;
     }
 
     modifier onlyDataLabelingPlatform() {
         require(msg.sender == dataLabelingPlatform, "Only DataLabelingPlatform can call");
         _;
+    }
+
+   // Add setter for dataLabelingPlatform address
+    function setDataLabelingPlatform(address _dataLabelingPlatform) external {
+        require(msg.sender == owner(), "Only owner can set platform");
+        require(dataLabelingPlatform == address(0), "Platform already set");
+        require(_dataLabelingPlatform != address(0), "Invalid platform address");
+        dataLabelingPlatform = _dataLabelingPlatform;
     }
 
     // Allow platform owner to update base endpoint if needed
@@ -88,6 +94,7 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard {
             level: 1,
             qualityScore: 0,
             lastEvolution: block.timestamp,
+            //https://localhost:3000/api/nft/rookie/
             baseURI: string(abi.encodePacked(baseEndpoint, "/rookie/"))
         });
 
@@ -199,6 +206,8 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard {
         UserPerformance memory performance = userPerformance[owner];
         
         // Include performance data in the URI
+        //https://localhost/api/nft/rokkie/123/metadata?level=2&tasks=50&quality=85&highscore=95
+
         return string(abi.encodePacked(
             metadata.baseURI,
             toString(tokenId),

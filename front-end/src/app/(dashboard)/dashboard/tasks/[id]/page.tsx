@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -11,7 +12,8 @@ import { TaskDetailsSkeleton } from "./components/task-skeleton";
 import { TaskRewards } from "./components/task-rewards";
 
 export default function TaskPage({ params }: { params: { id: string } }) {
-  const taskId = parseInt(params.id);
+  const unwrappedParams = use(params);
+  const taskId = parseInt(unwrappedParams.id);
   const { task, isLoading, error, actions } = useTaskDetails(taskId);
 
   if (error) {

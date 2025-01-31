@@ -1,7 +1,6 @@
-import { gql, GraphQLClient } from "graphql-request";
 import { NextRequest, NextResponse } from "next/server";
-import { inflate } from "pako";
 import { TaskMetadata } from "@/types/task";
+import { createAutoDriveApi, downloadFile } from '@autonomys/auto-drive';
 
 const detectFileType = async (arrayBuffer: ArrayBuffer): Promise<string> => {
   const bytes = [...new Uint8Array(arrayBuffer.slice(0, 4))]
@@ -33,79 +32,31 @@ const detectFileType = async (arrayBuffer: ArrayBuffer): Promise<string> => {
   return "unknown";
 };
 
-async function fetchFromAutoDrive(cid: string) {
-  const endpoint = `https://subql.blue.taurus.subspace.network/v1/graphql`;
-  const client = new GraphQLClient(endpoint);
-  const query = gql`
-    query GetCID($cid: String!) {
-      files_files(where: { id: { _eq: $cid } }) {
-        chunk {
-          data
-          uploadOptions: upload_options
-        }
-        file_cids {
-          chunk {
-            data
-          }
-        }
-      }
-    }
-  `;
-
-  const data = await client.request(query, { cid });
-  console.log(data, "data....................................");
-  console.log(cid);
-  if (!data.files_files.length) {
-    throw new Error("CID not found");
-  }
-
-  return data;
+const apiKey = process.env.AUTO_DRIVE_API_KEY;
+if (apiKey == undefined) {
+throw new Error("AUTO_DRIVE_API_KEY is not set");
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function processRawData(data: any): Promise<ArrayBuffer> {
-  let dataArrayBuffer = new ArrayBuffer(0);
-  const fileData = data.files_files[0];
-  if (fileData.file_cids.length === 0) {
-    const rawData = fileData.chunk.data;
-    dataArrayBuffer = Object.values(
-      JSON.parse(rawData)
-    ) as unknown as ArrayBuffer;
-  } else {
-    for (const fileCid of fileData.file_cids) {
-      const chunkData = Object.values(
-        JSON.parse(fileCid.chunk.data)
-      ) as unknown as ArrayBuffer;
-      dataArrayBuffer = new Uint8Array([
-        ...new Uint8Array(dataArrayBuffer),
-        ...new Uint8Array(chunkData),
-      ]).buffer;
-    }
-  }
-
-  // Handle compression
+async function fetchFromAutoDrive(cid: string) {
+  const api = createAutoDriveApi({ apiKey,network:"taurus" });
+  console.log(cid, "cid");
   try {
-    const uploadOptions = fileData.chunk.uploadOptions
-      ? JSON.parse(fileData.chunk.uploadOptions)
-      : null;
-
-    if (uploadOptions?.compression?.algorithm === "ZLIB") {
-      dataArrayBuffer = inflate(Buffer.from(dataArrayBuffer))
-        .buffer as ArrayBuffer;
+    const stream = await downloadFile(api, cid);
+    let file = Buffer.alloc(0);
+    for await (const chunk of stream) {
+      file = Buffer.concat([file, chunk]);
     }
+    return file;
   } catch (error) {
-    console.error("Error decompressing data:", error);
+    console.error('Error downloading file:', error);
+    throw new Error("CID not found");
   }
-
-  return dataArrayBuffer;
 }
 
 async function processMetadata(cid: string): Promise<NextResponse> {
-  const data = await fetchFromAutoDrive(cid);
-  const dataArrayBuffer = await processRawData(data);
-
   try {
-    const jsonString = Buffer.from(dataArrayBuffer).toString("utf-8");
+    const fileBuffer = await fetchFromAutoDrive(cid);
+    const jsonString = fileBuffer.toString("utf-8");
     console.log(jsonString, "jsonString(((((   ))))))))))");
     const metadata = JSON.parse(jsonString.trim()) as TaskMetadata;
 
@@ -128,24 +79,30 @@ async function processMetadata(cid: string): Promise<NextResponse> {
 }
 
 async function processImage(cid: string): Promise<NextResponse> {
-  const data = await fetchFromAutoDrive(cid);
-  const dataArrayBuffer = await processRawData(data);
+  try {
+    const fileBuffer = await fetchFromAutoDrive(cid) ;
+    const fileType = await detectFileType(fileBuffer);
 
-  const fileType = await detectFileType(dataArrayBuffer);
+    if (!fileType.startsWith("image/")) {
+      return NextResponse.json(
+        { error: "Invalid image format" },
+        { status: 400 }
+      );
+    }
 
-  if (!fileType.startsWith("image/")) {
+    return new NextResponse(fileBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": fileType,
+      },
+    });
+  } catch (error) {
+    console.error("Error processing image:", error);
     return NextResponse.json(
-      { error: "Invalid image format" },
-      { status: 400 }
+      { error: "Failed to process image" },
+      { status: 500 }
     );
   }
-
-  return new NextResponse(dataArrayBuffer, {
-    status: 200,
-    headers: {
-      "Content-Type": fileType,
-    },
-  });
 }
 
 export async function GET(req: NextRequest) {

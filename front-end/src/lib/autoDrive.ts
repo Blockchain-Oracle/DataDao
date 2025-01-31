@@ -1,10 +1,14 @@
-import { createAutoDriveApi, uploadFile } from "@autonomys/auto-drive";
+import { createAutoDriveApi, uploadFile, downloadFile } from "@autonomys/auto-drive";
 
+
+const apikey=process.env.AUTO_DRIVE_API_KEY
+if(apikey==undefined){
+  throw new Error("Autodrice api key not set");
+}
 // Initialize Auto Drive client
 const driveClient = createAutoDriveApi({
-  apiKey: process.env.AUTO_DRIVE_API_KEY,
-  url:
-    process.env.AUTO_DRIVE_URL || "https://demo.auto-drive.autonomys.xyz/api",
+  apiKey: apikey,
+    network:"taurus"
 });
 
 export interface ProfileData {
@@ -54,14 +58,17 @@ export async function uploadProfile(profile: ProfileData): Promise<string> {
 
 export async function fetchProfile(cid: string): Promise<ProfileData | null> {
   try {
-    const response = await fetch(`/api/cid/metadata/${cid}`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch profile");
+    const stream = await downloadFile(driveClient, cid);
+    let file = Buffer.alloc(0);
+    
+    for await (const chunk of stream) {
+      file = Buffer.concat([file, chunk]);
     }
-    const data = await response.json();
-    return data as ProfileData;
+    
+    const profileData = JSON.parse(file.toString()) as ProfileData;
+    return profileData;
   } catch (error) {
-    console.error("Error fetching from Auto Drive:", error);
+    console.error("Error downloading from Auto Drive:", error);
     return null;
   }
 }

@@ -1,114 +1,124 @@
 import { useEffect, useState } from "react";
-import { createPublicClient, http, parseAbiItem } from "viem";
+import { useReadContract } from "wagmi";
 import { wagmiContractConfig } from "@/lib/constant";
-import { hardhat } from "viem/chains";
+import { wagmiConfig } from "@/config/wagmi";
+import { formatEther } from "viem";
 
-const publicClient = createPublicClient({
-  chain: hardhat,
-  transport: http(),
-});
+interface EventLog {
+  event: string;
+  type: string;
+  timestamp: number;
+  amount?: string;
+  taskId?: number;
+}
 
-export function useEventLogs(address: string) {
+export function useEventLogs(address?: string) {
   const [isLoading, setIsLoading] = useState(true);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<EventLog[]>([]);
+
+  // Get user deposits
+  const { data: deposits } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getUserDeposits",
+    args: [address],
+    config: wagmiConfig,
+  });
+
+  // Get user withdrawals
+  const { data: withdrawals } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getUserWithdrawals",
+    args: [address],
+    config: wagmiConfig,
+  });
+
+  // Get tasks created
+  const { data: tasksCreated } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getTasksByCreator",
+    args: [address],
+    config: wagmiConfig,
+  });
+
+  // Get tasks participated
+  const { data: tasksParticipated } = useReadContract({
+    ...wagmiContractConfig,
+    functionName: "getTasksByParticipant",
+    args: [address],
+    config: wagmiConfig,
+  });
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    if (!address) {
+      setIsLoading(false);
+      return;
+    }
+
+    const processLogs = () => {
       try {
         setIsLoading(true);
+        const allLogs: EventLog[] = [];
 
-        // Fetch all relevant event logs
-        const [
-          depositLogs,
-          withdrawLogs,
-          taskCreatedLogs,
-          taskPerformedLogs,
-          rewardsDistributedLogs,
-          rewardClaimLogs,
-        ] = await Promise.all([
-          // Token deposits
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event TokensDeposited(address indexed user, uint256 amount)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-          // Withdrawals
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event Withdraw(address indexed user, uint256 amount)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-          // Task creation
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event TaskCreated(uint256 indexed taskId, address indexed creator)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-          // Task participation
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event TaskPerformed(uint256 indexed taskId, address indexed participant)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-          // Rewards distribution
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event RewardsDistributed(uint256 indexed taskId)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-          // Reward claims
-          publicClient.getLogs({
-            address: wagmiContractConfig.address,
-            event: parseAbiItem(
-              "event RewardClaim(uint256 indexed taskId, address indexed participant, uint256 amount)"
-            ),
-            fromBlock: 0n,
-            toBlock: "latest",
-          }),
-        ]);
+        // Process deposits
+        if (deposits) {
+          deposits.forEach((deposit: any) => {
+            allLogs.push({
+              event: "Token Deposit",
+              type: "DEPOSIT",
+              timestamp: Number(deposit.timestamp),
+              amount: formatEther(deposit.amount),
+            });
+          });
+        }
 
-        // Filter logs for the current user's address
-        const userLogs = {
-          deposits: depositLogs.filter((log) => log.args.user === address),
-          withdrawals: withdrawLogs.filter((log) => log.args.user === address),
-          tasksCreated: taskCreatedLogs.filter(
-            (log) => log.args.creator === address
-          ),
-          tasksPerformed: taskPerformedLogs.filter(
-            (log) => log.args.participant === address
-          ),
-          rewardsClaimed: rewardClaimLogs.filter(
-            (log) => log.args.participant === address
-          ),
-        };
+        // Process withdrawals
+        if (withdrawals) {
+          withdrawals.forEach((withdrawal: any) => {
+            allLogs.push({
+              event: "Token Withdrawal",
+              type: "WITHDRAWAL",
+              timestamp: Number(withdrawal.timestamp),
+              amount: formatEther(withdrawal.amount),
+            });
+          });
+        }
 
-        setLogs(userLogs);
+        // Process tasks created
+        if (tasksCreated) {
+          tasksCreated.forEach((taskId: bigint) => {
+            allLogs.push({
+              event: "Task Created",
+              type: "TASK",
+              timestamp: Date.now(),
+              taskId: Number(taskId),
+            });
+          });
+        }
+
+        // Process tasks participated
+        if (tasksParticipated) {
+          tasksParticipated.forEach((taskId: bigint) => {
+            allLogs.push({
+              event: "Task Participated",
+              type: "PARTICIPATION",
+              timestamp: Date.now(),
+              taskId: Number(taskId),
+            });
+          });
+        }
+
+        // Sort logs by timestamp (newest first)
+        allLogs.sort((a, b) => b.timestamp - a.timestamp);
+        setLogs(allLogs);
       } catch (error) {
-        console.error("Error fetching logs:", error);
+        console.error("Error processing logs:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (address) {
-      fetchLogs();
-    }
-  }, [address]);
+    processLogs();
+  }, [address, deposits, withdrawals, tasksCreated, tasksParticipated]);
 
   return { logs, isLoading };
 }

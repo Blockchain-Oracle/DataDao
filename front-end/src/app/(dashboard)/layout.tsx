@@ -48,6 +48,11 @@ const sidebarNavItems = [
     icon: Award,
   },
   {
+    title: "NFT Stats",
+    href: "/dashboard/nft-stats",
+    icon: Award,
+  },
+  {
     title: "Analytics",
     href: "/dashboard/analytics",
     icon: BarChart3,
