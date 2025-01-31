@@ -1,0 +1,5 @@
+{
+	"devDependencies": {
+		"node-loader": "^2.1.0"
+	}
+}

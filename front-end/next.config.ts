@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+
+  module: {
+    rules: [
+      {
+        test: /\.node$/,
+        loader: "node-loader",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

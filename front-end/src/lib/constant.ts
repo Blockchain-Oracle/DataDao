@@ -15,6 +15,8 @@ export const wagmiContractConfig = {
   abi: DataLabelingPlatformABI,
 } as const;
 
+
+//taurs mainnet ERC20Mocktoken 0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c
 export const wagmiERC20MockConfig = {
   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" as Address,
   abi: ERC20MockABI,
