@@ -33,8 +33,9 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
   const [amount, setAmount] = useState<string>("");
   const [isApproving, setIsApproving] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
 
-  const { allowance, balance, approveTokens, depositTokens, tokenBalance } =
+  const { allowance, balance, approveTokens, depositTokens, tokenBalance, mintTokens } =
     useTokenOperations(address);
 
   // Watch approval events
@@ -63,6 +64,22 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
       onClose();
       setAmount("");
       setIsDepositing(false);
+    },
+  });
+
+  // Watch mint events
+  useWatchContractEvent({
+    ...wagmiERC20MockConfig,
+    eventName: "Transfer",
+    onLogs(logs) {
+      const [log] = logs;
+      if (log.args.to === address) {  // Only handle mints to current user
+        toast({
+          title: "Minting successful",
+          description: `Successfully minted ${amount} tokens to your wallet`,
+        });
+        setIsMinting(false);
+      }
     },
   });
 
@@ -107,6 +124,28 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
         variant: "destructive",
       });
       setIsDepositing(false);
+    }
+  };
+
+  const handleMint = async () => {
+    if (!amount) return;
+
+    try {
+      setIsMinting(true);
+      await mintTokens(amount);
+
+      toast({
+        title: "Minting initiated",
+        description: `Minting ${amount} tokens to your wallet...`,
+      });
+    } catch (error) {
+      toast({
+        title: "Minting failed",
+        description:
+          error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      setIsMinting(false);
     }
   };
 
@@ -193,7 +232,22 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          {needsApproval ? (
+          {parseFloat(formattedTokenBalance) === 0 ? (
+            <Button 
+              onClick={handleMint} 
+              disabled={isMinting || !amount || parseFloat(amount) <= 0}
+              className="min-w-[120px]"
+            >
+              {isMinting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Minting...
+                </>
+              ) : (
+                "Mint Tokens"
+              )}
+            </Button>
+          ) : needsApproval ? (
             <Button onClick={handleApprove} disabled={isApproving}>
               {isApproving ? (
                 <>

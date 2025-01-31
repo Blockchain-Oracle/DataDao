@@ -18,16 +18,16 @@ contract Interactions is Script {
         vm.startBroadcast();
 
         // Deploy mock token
-        token = ERC20Mock(payable(0x5FbDB2315678afecb367f032d93F642f64180aa3));
+        token = ERC20Mock(payable(0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c));
         console.log("Mock token deployed at:", address(token));
 
         // Deploy NFT contract
-        nft = PerformanceNFT(payable(0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512));
-        console.log("NFT contract deployed at:", address(nft));
+        nft = PerformanceNFT(payable(0xEd51ca2ebB382E6f28aCc011C13b516D458671C3));
+        // console.log("NFT contract deployed at:", address(nft));
 
         // Deploy platform with mock token and NFT
-        platform = DataLabelingPlatform(payable(0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0));
-        console.log("Platform deployed at:", address(platform));
+        platform = DataLabelingPlatform(payable(0x470658a21d9f83248B18301972111DD1bBf774C9));
+        // console.log("Platform deployed at:", address(platform));
 
         // Set platform address in NFT contract
         nft.setDataLabelingPlatform(address(platform));
@@ -45,7 +45,7 @@ contract Interactions is Script {
             platform.depositTokens(100 * 10 ** 18); // Each user deposits 100 tokens
             console.log("Deposited 100 tokens for user", users[i]);
         }
-        address(0xc75CB6f74819D36CB07f2eE9690C5c6D585E9a89).call{value: 4 ether}("");
+        // address(0xc75CB6f74819D36CB07f2eE9690C5c6D585E9a89).call{value: 4 ether}("");
         console.log("Sent 4 ETH to test address");
 
         // Create multiple tasks with different parameters
@@ -67,7 +67,7 @@ contract Interactions is Script {
         for (uint i = 0; i < ipfsCIDs.length; i++) {
             // console.log("Creating task", i, "with reward", rewards[i], "and deadline", deadlines[i]);
             platform.createTask(ipfsCIDs[i], rewards[i], deadlines[i]);
-            console.log("task created successfully", i);
+            // console.log("task created successfully", i);
         }
 
         vm.stopBroadcast();
