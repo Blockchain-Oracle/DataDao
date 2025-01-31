@@ -73,6 +73,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
     eventName: "Transfer",
     onLogs(logs) {
       const [log] = logs;
+      console.log(logs);
       if (log.args.to === address) {  // Only handle mints to current user
         toast({
           title: "Minting successful",
