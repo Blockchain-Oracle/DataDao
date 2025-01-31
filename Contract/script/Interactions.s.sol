@@ -64,11 +64,11 @@ contract Interactions is Script {
         deadlines[1] = block.timestamp + 3 days;
         deadlines[2] = block.timestamp + 7 days;
 
-        // for (uint i = 0; i < ipfsCIDs.length; i++) {
-        //     // console.log("Creating task", i, "with reward", rewards[i], "and deadline", deadlines[i]);
-        //     platform.createTask(ipfsCIDs[i], rewards[i], deadlines[i]);
-        //     console.log("task created successfully", i);
-        // }
+        for (uint i = 0; i < ipfsCIDs.length; i++) {
+            // console.log("Creating task", i, "with reward", rewards[i], "and deadline", deadlines[i]);
+            platform.createTask(ipfsCIDs[i], rewards[i], deadlines[i]);
+            console.log("task created successfully", i);
+        }
 
         vm.stopBroadcast();
         console.log("Script execution completed");
