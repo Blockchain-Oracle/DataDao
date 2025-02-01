@@ -8,7 +8,6 @@ export function MainNav({ mobile }: { mobile?: boolean }) {
   const pathname = usePathname();
   const routes = [
     { name: "Explore", href: "/dashboard/tasks" },
-    { name: "Create", href: "/dashboard/create" },
     { name: "My Tasks", href: "/dashboard/my-tasks" },
     { name: "Rewards", href: "/dashboard/rewards" },
   ];

@@ -18,7 +18,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAccount } from "wagmi";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 
 const sidebarNavItems = [
@@ -72,10 +72,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { isConnected } = useAccount();
-
-  // if (!isConnected) {
-  //   redirect("/");
-  // }
+  const router=useRouter();
+  
+  if (!isConnected) {
+    router.push("/");
+  }
 
   return (
     <ThemeProvider

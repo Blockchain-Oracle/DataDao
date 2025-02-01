@@ -15,7 +15,6 @@ import {
 import {
   LayoutDashboard,
   ListTodo,
-  PlusCircle,
   History,
   Award,
   Settings,
@@ -44,11 +43,6 @@ const mainNavItems = [
     title: "Available Tasks",
     href: "/dashboard/tasks",
     icon: ListTodo,
-  },
-  {
-    title: "Create Task",
-    href: "/dashboard/create",
-    icon: PlusCircle,
   },
   {
     title: "My Tasks",
