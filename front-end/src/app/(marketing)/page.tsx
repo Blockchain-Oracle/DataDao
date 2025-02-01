@@ -44,18 +44,26 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 sm:space-x-4">
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <Button
-                  size="lg"
-                  onClick={
-                    isConnected
-                      ? () => (window.location.href = "/dashboard/tasks")
-                      : openConnectModal
-                  }
-                  className="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                >
-                  {isConnected ? "Explore Tasks" : "Connect Wallet"}
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
+                isConnected ? (
+                  <Link href="/dashboard/tasks">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                    >
+                      Explore Tasks
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    size="lg"
+                    onClick={openConnectModal}
+                    className="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                  >
+                    Connect Wallet
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                )
               )}
             </ConnectButton.Custom>
             <Link href="/dashboard/tasks">

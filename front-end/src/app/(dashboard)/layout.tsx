@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAccount } from "wagmi";
@@ -72,11 +72,13 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { isConnected } = useAccount();
-  const router=useRouter();
+  const router = useRouter();
   
-  if (!isConnected) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (!isConnected) {
+      router.push("/");
+    }
+  }, [isConnected, router]);
 
   return (
     <ThemeProvider
