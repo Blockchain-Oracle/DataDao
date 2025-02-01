@@ -70,7 +70,7 @@ export function useTokenOperations(address?: `0x${string}`) {
     await writeMint({
       ...wagmiERC20MockConfig, // Changed to use ERC20 config instead of contract config
       functionName: "mint",
-      args: [wagmiContractConfig.address, parseEther(amount)],
+      args: [address, parseEther(amount)],
     });
   };
   // Watch token deposit events
