@@ -18,13 +18,13 @@ export const wagmiContractConfig = {
 
 //taurs mainnet ERC20Mocktoken 0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c
 export const wagmiERC20MockConfig = {
-  address: "0x5FbDB2315678afecb367f032d93F642f64180aa3" as Address,
+  address: "0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c" as Address,
   abi: ERC20MockABI,
 } as const;
 export const LOCAL_RPC_URL = "http://127.0.0.1:8545";
 
-//taurs mainnet PerformanceNFT 0xEd51ca2ebB382E6f28aCc011C13b516D458671C3
+//taurs mainnet PerformanceNFT 0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320
 export const performanceNftConfig = {
-  address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" as Address,
+  address: "0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320" as Address,
   abi: PerformanceNFTABI,
 } as const;

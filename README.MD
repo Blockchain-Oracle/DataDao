@@ -172,9 +172,9 @@ NFTs evolve through four tiers based on performance, with all metadata stored on
 
 | Contract | Address | Explorer Link |
 |----------|---------|---------------|
-| DataLabelingPlatform | `0x470658a21d9f83248B18301972111DD1bBf774C9` | [View on Blockscout](https://blockscout.taurus.autonomys.xyz/address/0x470658a21d9f83248B18301972111DD1bBf774C9) |
+| DataLabelingPlatform | `0xAae9C0dF6dF1A2274A3B4cE44BE3F34f381a164d` | [View on Blockscout](https://blockscout.taurus.autonomys.xyz/address/0x470658a21d9f83248B18301972111DD1bBf774C9) |
 | ERC20Mock Token | `0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c` | [View on Blockscout](https://blockscout.taurus.autonomys.xyz/address/0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c) |
-| PerformanceNFT | `0xEd51ca2ebB382E6f28aCc011C13b516D458671C3` | [View on Blockscout](https://blockscout.taurus.autonomys.xyz/address/0xEd51ca2ebB382E6f28aCc011C13b516D458671C3) |
+| PerformanceNFT | `0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320` | [View on Blockscout](https://blockscout.taurus.autonomys.xyz/address/0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320) |
 
 ### AI Integration 🤖
 

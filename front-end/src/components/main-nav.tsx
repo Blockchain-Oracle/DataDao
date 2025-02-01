@@ -15,7 +15,9 @@ export function MainNav({ mobile }: { mobile?: boolean }) {
 
   return (
     <nav
-      className={cn("hidden md:flex gap-1", mobile ? "flex-col" : "flex-row")}
+      className={cn(
+        mobile ? "flex flex-col gap-1" : "hidden md:flex flex-row gap-1"
+      )}
     >
       {routes.map((route) => (
         <Link
@@ -25,7 +27,7 @@ export function MainNav({ mobile }: { mobile?: boolean }) {
             "px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap",
             "hover:bg-accent/10 hover:text-primary",
             pathname === route.href
-              ? "bg-accent/10 text-primary"
+              ? "bg-accent/10 text-primary" 
               : "text-muted-foreground"
           )}
         >

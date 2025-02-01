@@ -22,7 +22,7 @@ contract Interactions is Script {
         console.log("Mock token deployed at:", address(token));
 
         // Deploy NFT contract
-        nft = PerformanceNFT(payable(0xEd51ca2ebB382E6f28aCc011C13b516D458671C3));
+        nft = PerformanceNFT(payable(0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320));
         // console.log("NFT contract deployed at:", address(nft));
 
         // Deploy platform with mock token and NFT
@@ -49,10 +49,10 @@ contract Interactions is Script {
         console.log("Sent 4 ETH to test address");
 
         // Create multiple tasks with different parameters
-        string[] memory ipfsCIDs = new string[](3);
-        ipfsCIDs[0] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
-        ipfsCIDs[1] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
-        ipfsCIDs[2] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
+        string[] memory autoDriveCIDS = new string[](3);
+        autoDriveCIDS[0] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
+        autoDriveCIDS[1] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
+        autoDriveCIDS[2] = "bafkr6iakneiv5izqwkq6ig4ps6cqy4xibpwhgretrkn2bsq4hymagxycqm";
 
         uint256[] memory rewards = new uint256[](3);
         rewards[0] = 10 * 10 ** 18; // 10 tokens
@@ -64,9 +64,9 @@ contract Interactions is Script {
         deadlines[1] = block.timestamp + 3 days;
         deadlines[2] = block.timestamp + 7 days;
 
-        for (uint i = 0; i < ipfsCIDs.length; i++) {
+        for (uint i = 0; i < autoDriveCIDS.length; i++) {
             // console.log("Creating task", i, "with reward", rewards[i], "and deadline", deadlines[i]);
-            platform.createTask(ipfsCIDs[i], rewards[i], deadlines[i]);
+            platform.createTask(autoDriveCIDS[i], rewards[i], deadlines[i]);
             // console.log("task created successfully", i);
         }
 

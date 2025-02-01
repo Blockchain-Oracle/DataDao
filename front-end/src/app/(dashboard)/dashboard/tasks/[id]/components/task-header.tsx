@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TaskDetails } from "@/hooks/useTaskDetails";
 import { useWatchContractEvent } from "wagmi";
 import { wagmiContractConfig } from "@/lib/constant";
+import { useRouter } from "next/navigation";
 
 interface TaskHeaderProps {
   task: TaskDetails;
@@ -16,6 +17,7 @@ interface TaskHeaderProps {
 
 export function TaskHeader({ task, actions }: TaskHeaderProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [isParticipating, setIsParticipating] = useState(false);
   const [isDistributing, setIsDistributing] = useState(false);
 
@@ -29,6 +31,7 @@ export function TaskHeader({ task, actions }: TaskHeaderProps) {
         title: "Rewards distributed",
         description: "Successfully distributed rewards to participants",
       });
+      router.refresh();
     },
   });
 
@@ -41,6 +44,7 @@ export function TaskHeader({ task, actions }: TaskHeaderProps) {
           title: "Successfully joined task",
           description: "You are now a participant in this task",
         });
+        router.refresh();
       } catch (err) {
         toast({
           title: "Failed to join task",
@@ -62,6 +66,7 @@ export function TaskHeader({ task, actions }: TaskHeaderProps) {
           title: "Distribution initiated",
           description: "Distributing rewards to participants...",
         });
+        router.refresh();
       } catch (err) {
         toast({
           title: "Failed to distribute rewards",

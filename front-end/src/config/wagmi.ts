@@ -1,11 +1,11 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
-  arbitrum,
-  base,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
+  // arbitrum,
+  // base,
+  // mainnet,
+  // optimism,
+  // polygon,
+  // sepolia,
 } from "wagmi/chains";
 import { tarus } from "../lib/defination/tarus";
 import { createConfig, http } from "@wagmi/core";
@@ -40,24 +40,23 @@ export const config = getDefaultConfig({
     process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "YOUR_PROJECT_ID",
   chains: [
     localAnvil, // Add local chain first
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
-    base,
+    // mainnet,
+    // polygon,
+    // optimism,
+    // arbitrum,
+    // base,
     tarus,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
   ],
   ssr: true,
 });
 
 // Wagmi config
 export const wagmiConfig = createConfig({
-  chains: [localAnvil, mainnet, sepolia, tarus],
+  chains: [localAnvil,  tarus],
   transports: {
     [localAnvil.id]: http(LOCAL_RPC_URL),
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    // [mainnet.id]: http(),
+    // [sepolia.id]: http(),
     [tarus.id]: http(),
   },
 });

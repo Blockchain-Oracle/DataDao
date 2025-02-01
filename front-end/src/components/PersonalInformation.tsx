@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Edit2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-
+import {useRouter} from "next/navigation";
 interface PersonalInformationProps {
   profile: ProfileData;
   isUpdating: boolean;
@@ -35,6 +35,7 @@ export function PersonalInformation({
   isUpdating,
   onUpdateProfile,
 }: PersonalInformationProps) {
+  const router=useRouter(); 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Truncate wallet address for display
@@ -52,6 +53,7 @@ export function PersonalInformation({
       
       // Trigger profile update
       await onUpdateProfile(formData);
+    router.refresh();
     }
   };
 

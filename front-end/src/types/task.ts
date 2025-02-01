@@ -2,7 +2,7 @@ export interface TaskMetadata {
   title: string;
   description: string;
   images: {
-    cid: string; // IPFS hash for each image
+    cid: string; // autoDriveCID hash for each image
     label?: string; // Optional label for the image
     url?: string; // Optional URL for the image
   }[];
