@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {PerformanceNFT} from  "./PerformanceNft.sol";
+import {PerformanceNFT} from "./PerformanceNft.sol";
 /**
  * @title DataLabelingPlatform
  * @author Blockchain Oracle
@@ -40,8 +40,6 @@ contract DataLabelingPlatform is ReentrancyGuard {
     error DataLabelingPlatform__TaskNotFound();
     error DataLabelingPlatform__AddressZero();
     error DataLabelingPlatform__WithdrawFailed();
-    error DataLabelingPlatform__OnlyCreatorCanSubmitScore();
-    error DataLabelingPlatform__InvalidQualityScore();
     /**
      * @dev Struct to store task information
      * @param creator Address of the task creator
@@ -84,7 +82,6 @@ contract DataLabelingPlatform is ReentrancyGuard {
     uint256 private s_taskIdCounter; //@note:this starts from zero index
     address private immutable i_tokenAddress;
     PerformanceNFT public immutable i_performanceNft;
-    mapping(uint256 => mapping(address => uint256)) private s_taskQualityScores;
 
     // Events
     event TaskCreated(
@@ -101,7 +98,6 @@ contract DataLabelingPlatform is ReentrancyGuard {
     event TokensReceived(address indexed token, address indexed from, uint256 amount);
     event RewardClaim(uint256 indexed taskId, address indexed user, uint256 indexed amount);
     event Withdraw(address indexed sender, uint256 indexed amount);
-    event QualityScoreSubmitted(uint256 indexed taskId, address indexed participant, uint256 qualityScore);
     /**
      * @notice Initializes the contract with a specific ERC20 token
      * @param _tokenAddress Address of the ERC20 token to be used for rewards
@@ -216,6 +212,9 @@ contract DataLabelingPlatform is ReentrancyGuard {
         if (getParticipantTaskCount(msg.sender) == 1) {
             i_performanceNft.mintInitialNFT(msg.sender);
         }
+
+        // Update performance NFT with task completion
+        i_performanceNft.updatePerformance(msg.sender);
 
         emit TaskPerformed(taskId, msg.sender);
     }
@@ -476,23 +475,6 @@ contract DataLabelingPlatform is ReentrancyGuard {
         return result;
     }
 
-    // Add function to submit quality score for a task
-    function submitQualityScore(uint256 taskId, address participant, uint256 qualityScore) external {
-        if (msg.sender != s_taskIdToTask[taskId].creator) {
-            revert DataLabelingPlatform__OnlyCreatorCanSubmitScore();
-        }
-        if (qualityScore > 100) {
-            revert DataLabelingPlatform__InvalidQualityScore();
-        }
-        
-        s_taskQualityScores[taskId][participant] = qualityScore;
-        
-        // Update performance NFT
-        i_performanceNft.updatePerformance(participant, qualityScore);
-        
-        emit QualityScoreSubmitted(taskId, participant, qualityScore);
-    }
-
     // Add helper function to get participant's task count
     function getParticipantTaskCount(address participant) public view returns (uint256) {
         uint256 count = 0;
@@ -502,10 +484,5 @@ contract DataLabelingPlatform is ReentrancyGuard {
             }
         }
         return count;
-    }
-
-    // Add getter for quality scores
-    function getTaskQualityScore(uint256 taskId, address participant) external view returns (uint256) {
-        return s_taskQualityScores[taskId][participant];
     }
 }

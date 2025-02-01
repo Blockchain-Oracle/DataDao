@@ -22,7 +22,6 @@ import { Separator } from "@/components/ui/separator";
 import { useWatchContractEvent } from "wagmi";
 import { wagmiContractConfig } from "@/lib/constant";
 import { wagmiERC20MockConfig } from "@/lib/constant";
-import { useRouter } from "next/navigation";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -32,7 +31,6 @@ interface DepositModalProps {
 export function DepositModal({ isOpen, onClose }: DepositModalProps) {
   const { address } = useAccount();
   const { toast } = useToast();
-  const router = useRouter();
   const [amount, setAmount] = useState<string>("");
   const [isApproving, setIsApproving] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
@@ -52,7 +50,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
         description: "You can now deposit your tokens",
       });
       setIsApproving(false);
-      router.refresh();
+      window.location.reload();
     },
   });
 
@@ -68,7 +66,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
       onClose();
       setAmount("");
       setIsDepositing(false);
-      router.refresh();
+      window.location.reload();
     },
   });
 
@@ -85,7 +83,7 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
           description: `Successfully minted ${amount} tokens to your wallet`,
         });
         setIsMinting(false);
-        router.refresh();
+        window.location.reload();
       }
     },
   });

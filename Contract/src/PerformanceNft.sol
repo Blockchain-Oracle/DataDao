@@ -1,63 +1,50 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-
-import {ERC721Enumerable,ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {ERC721Enumerable, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title PerformanceNFT
  * @notice NFT contract that evolves based on user performance in the DataLabelingPlatform
  */
-contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
-    // Add error for invalid quality score
-    error PerformanceNFT__InvalidQualityScore();
 
+contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
     // Performance tracking
     struct UserPerformance {
         uint256 tasksCompleted;
-        uint256 totalQualityScore;
-        uint256 averageQualityScore;
         uint256 lastUpdateBlock;
         uint8 currentLevel;
-        uint256 highestQualityScore;
-        uint256 consecutiveHighScores;  // Track consecutive scores above threshold
     }
 
     // NFT Metadata
     struct NFTMetadata {
         uint8 level;
-        uint256 qualityScore;
         uint256 lastEvolution;
         string baseURI;
     }
 
     // State variables
     uint256 private _tokenIdCounter;
-    address public  dataLabelingPlatform;
+    address public dataLabelingPlatform;
     mapping(address => UserPerformance) public userPerformance;
     mapping(uint256 => NFTMetadata) public nftMetadata;
 
     // Evolution thresholds
-    uint256 public constant ROOKIE_THRESHOLD = 5; // 5 tasks
-    uint256 public constant INTERMEDIATE_THRESHOLD = 20; // 20 tasks
-    uint256 public constant EXPERT_THRESHOLD = 50; // 50 tasks
-    uint256 public constant MASTER_THRESHOLD = 100; // 100 tasks
-    uint256 public constant MIN_QUALITY_SCORE = 70; // Minimum quality score for evolution
+    uint256 public constant LEVEL_1_THRESHOLD = 5;  // 5 tasks
+    uint256 public constant LEVEL_2_THRESHOLD = 10; // 10 tasks
+    uint256 public constant LEVEL_3_THRESHOLD = 15; // 15 tasks
+    uint256 public constant LEVEL_4_THRESHOLD = 20; // 20 tasks
 
     // Base URI for Auto Drive endpoint
     string public baseEndpoint;
 
     // Events
     event NFTMinted(address indexed user, uint256 indexed tokenId);
-    event NFTEvolved(uint256 indexed tokenId, uint8 newLevel, uint256 qualityScore);
-    event PerformanceUpdated(address indexed user, uint256 tasksCompleted, uint256 qualityScore);
-    event QualityScoreUpdated(address indexed user, uint256 newScore, uint256 averageScore);
-    event ConsecutiveHighScoreAchieved(address indexed user, uint256 count);
+    event NFTEvolved(uint256 indexed tokenId, uint8 newLevel);
+    event PerformanceUpdated(address indexed user, uint256 tasksCompleted);
 
-    constructor(
-        string memory _baseEndpoint
-    ) ERC721("Performance NFT", "PERF") Ownable(msg.sender) {
+    constructor(string memory _baseEndpoint) ERC721("Performance NFT", "PERF") Ownable(msg.sender) {
         baseEndpoint = _baseEndpoint;
     }
 
@@ -66,7 +53,7 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
         _;
     }
 
-   // Add setter for dataLabelingPlatform address
+    // Add setter for dataLabelingPlatform address
     function setDataLabelingPlatform(address _dataLabelingPlatform) external {
         require(msg.sender == owner(), "Only owner can set platform");
         require(dataLabelingPlatform == address(0), "Platform already set");
@@ -92,20 +79,14 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
 
         nftMetadata[tokenId] = NFTMetadata({
             level: 1,
-            qualityScore: 0,
             lastEvolution: block.timestamp,
-            //https://localhost:3000/api/nft/rookie/
             baseURI: string(abi.encodePacked(baseEndpoint, "/rookie/"))
         });
 
         userPerformance[user] = UserPerformance({
             tasksCompleted: 0,
-            totalQualityScore: 0,
-            averageQualityScore: 0,
             lastUpdateBlock: block.number,
-            currentLevel: 1,
-            highestQualityScore: 0,
-            consecutiveHighScores: 0
+            currentLevel: 1
         });
 
         emit NFTMinted(user, tokenId);
@@ -115,42 +96,18 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
     /**
      * @notice Updates user performance and potentially evolves their NFT
      * @param user Address of the user
-     * @param qualityScore Quality score for the completed task (0-100)
      */
-    function updatePerformance(address user, uint256 qualityScore) external onlyDataLabelingPlatform nonReentrant {
-        if (qualityScore > 100) {
-            revert PerformanceNFT__InvalidQualityScore();
-        }
-
+    function updatePerformance(address user) external onlyDataLabelingPlatform nonReentrant {
         UserPerformance storage performance = userPerformance[user];
         
-        // Update performance metrics
+        // Increment tasks completed
         performance.tasksCompleted++;
-        performance.totalQualityScore += qualityScore;
-        performance.averageQualityScore = performance.totalQualityScore / performance.tasksCompleted;
-        
-        // Track highest score
-        if (qualityScore > performance.highestQualityScore) {
-            performance.highestQualityScore = qualityScore;
-        }
-        
-        // Track consecutive high scores
-        if (qualityScore >= MIN_QUALITY_SCORE) {
-            performance.consecutiveHighScores++;
-            if (performance.consecutiveHighScores % 5 == 0) { // Every 5 consecutive high scores
-                emit ConsecutiveHighScoreAchieved(user, performance.consecutiveHighScores);
-            }
-        } else {
-            performance.consecutiveHighScores = 0;
-        }
-
         performance.lastUpdateBlock = block.number;
 
         // Check for evolution
         checkAndEvolveNFT(user);
 
-        emit PerformanceUpdated(user, performance.tasksCompleted, qualityScore);
-        emit QualityScoreUpdated(user, qualityScore, performance.averageQualityScore);
+        emit PerformanceUpdated(user, performance.tasksCompleted);
     }
 
     /**
@@ -159,26 +116,25 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
      */
     function checkAndEvolveNFT(address user) internal {
         UserPerformance storage performance = userPerformance[user];
-        uint256 tokenId = tokenOfOwnerByIndex(user, 0); // Get user's first NFT
+        uint256 tokenId = tokenOfOwnerByIndex(user, 0);
         NFTMetadata storage metadata = nftMetadata[tokenId];
-
-        // Only evolve if minimum quality score is met
-        if (performance.averageQualityScore < MIN_QUALITY_SCORE) {
-            return;
-        }
 
         uint8 newLevel = performance.currentLevel;
         string memory newBaseURI = metadata.baseURI;
 
-        if (performance.tasksCompleted >= MASTER_THRESHOLD && performance.currentLevel < 4) {
+        // Check evolution thresholds
+        if (performance.tasksCompleted >= LEVEL_4_THRESHOLD && performance.currentLevel < 4) {
             newLevel = 4;
             newBaseURI = string(abi.encodePacked(baseEndpoint, "/master/"));
-        } else if (performance.tasksCompleted >= EXPERT_THRESHOLD && performance.currentLevel < 3) {
+        } else if (performance.tasksCompleted >= LEVEL_3_THRESHOLD && performance.currentLevel < 3) {
             newLevel = 3;
             newBaseURI = string(abi.encodePacked(baseEndpoint, "/expert/"));
-        } else if (performance.tasksCompleted >= INTERMEDIATE_THRESHOLD && performance.currentLevel < 2) {
+        } else if (performance.tasksCompleted >= LEVEL_2_THRESHOLD && performance.currentLevel < 2) {
             newLevel = 2;
             newBaseURI = string(abi.encodePacked(baseEndpoint, "/intermediate/"));
+        } else if (performance.tasksCompleted >= LEVEL_1_THRESHOLD && performance.currentLevel < 1) {
+            newLevel = 1;
+            newBaseURI = string(abi.encodePacked(baseEndpoint, "/rookie/"));
         }
 
         if (newLevel != performance.currentLevel) {
@@ -186,9 +142,8 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
             metadata.level = newLevel;
             metadata.baseURI = newBaseURI;
             metadata.lastEvolution = block.timestamp;
-            metadata.qualityScore = performance.averageQualityScore;
 
-            emit NFTEvolved(tokenId, newLevel, performance.averageQualityScore);
+            emit NFTEvolved(tokenId, newLevel);
         }
     }
 
@@ -200,22 +155,20 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
         NFTMetadata memory metadata = nftMetadata[tokenId];
-        
-        // Get the owner's performance data
         address owner = ownerOf(tokenId);
         UserPerformance memory performance = userPerformance[owner];
-        
-        // Include performance data in the URI
-        //https://localhost/api/nft/rokkie/123/metadata?level=2&tasks=50&quality=85&highscore=95
+//https://vercel.com/blockchain-oracles-projects/data-dao/api/nft/rookie/1/metadata?level=1&tasks=5
 
-        return string(abi.encodePacked(
-            metadata.baseURI,
-            toString(tokenId),
-            "/metadata?level=", toString(metadata.level),
-            "&tasks=", toString(performance.tasksCompleted),
-            "&quality=", toString(performance.averageQualityScore),
-            "&highscore=", toString(performance.highestQualityScore)
-        ));
+        return string(
+            abi.encodePacked(
+                metadata.baseURI,
+                toString(tokenId),
+                "/metadata?level=",
+                toString(metadata.level),
+                "&tasks=",
+                toString(performance.tasksCompleted)
+            )
+        );
     }
 
     /**
@@ -241,5 +194,4 @@ contract PerformanceNFT is ERC721Enumerable, ReentrancyGuard, Ownable {
         }
         return string(buffer);
     }
-
 }

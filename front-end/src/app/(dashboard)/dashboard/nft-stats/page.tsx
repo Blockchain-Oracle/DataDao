@@ -4,7 +4,7 @@ import { useNFTPerformance } from "@/hooks/useNFTPerformance";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Award, Star, Trophy, Target, Zap } from "lucide-react";
+import { Trophy } from "lucide-react";
 import Image from "next/image";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -103,7 +103,7 @@ export default function NFTStatsPage() {
               </div>
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Tasks Required</span>
-                <p className="text-2xl font-bold">{thresholds.MASTER_THRESHOLD.toString()}</p>
+                <p className="text-2xl font-bold">{thresholds.LEVEL_4_THRESHOLD.toString()}</p>
               </div>
             </div>
           </CardContent>
@@ -123,27 +123,6 @@ export default function NFTStatsPage() {
                   <p className="text-xl font-bold">{performanceData.tasksCompleted.toString()}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <Star className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Quality Score</p>
-                  <p className="text-xl font-bold">{performanceData.averageQualityScore.toString()}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Target className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Highest Score</p>
-                  <p className="text-xl font-bold">{performanceData.highestQualityScore.toString()}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Zap className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Consecutive High Scores</p>
-                  <p className="text-xl font-bold">{performanceData.consecutiveHighScores.toString()}</p>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -154,7 +133,7 @@ export default function NFTStatsPage() {
           {performanceData.tokenId && (
             <div className="relative aspect-video">
               <Image
-                src={`/api/nft/${performanceData.levelTitle}/${performanceData.tokenId}/image`}
+                src={`/api/nft/${performanceData?.levelTitle}/${performanceData.tokenId}/image`}
                 alt="NFT"
                 fill
                 className="object-contain"

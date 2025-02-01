@@ -35,7 +35,6 @@ import { Progress } from "@/components/ui/progress";
 import { TaskMetadata } from "@/types/task";
 import { wagmiContractConfig } from "@/lib/constant";
 import { useWatchContractEvent } from "wagmi";
-import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -60,7 +59,6 @@ export function CreateTaskModal() {
   const [step, setStep] = useState<"upload" | "transaction" | "complete">(
     "upload"
   );
-  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,7 +96,7 @@ export function CreateTaskModal() {
       setFiles([]);
       resetProgress();
       setIsSubmitting(false);
-      router.refresh();
+      window.location.reload();
     },
   });
 

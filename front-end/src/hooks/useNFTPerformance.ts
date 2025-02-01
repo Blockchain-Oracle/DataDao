@@ -6,11 +6,8 @@ import { performanceNftConfig } from "@/lib/constant";
 
 export interface UserPerformanceData {
   tasksCompleted: bigint;
-  totalQualityScore: bigint;
-  averageQualityScore: bigint;
+  lastUpdateBlock: bigint;
   currentLevel: number;
-  highestQualityScore: bigint;
-  consecutiveHighScores: bigint;
   tokenId?: bigint;
   levelTitle: 'rookie' | 'intermediate' | 'expert' | 'master';
 }
@@ -18,13 +15,9 @@ export interface UserPerformanceData {
 // Mapping of array indices to performance data fields
 const PERFORMANCE_DATA_MAPPING = {
   TASKS_COMPLETED: 0,
-  TOTAL_QUALITY_SCORE: 1,
-  AVERAGE_QUALITY_SCORE: 2,
-  CURRENT_LEVEL: 3,
-  HIGHEST_QUALITY_SCORE: 4,
-  CONSECUTIVE_HIGH_SCORES: 5
+  LAST_UPDATE_BLOCK: 1,
+  CURRENT_LEVEL: 2
 } as const;
-
 
 /**
  * Hook for accessing user's NFT performance data and ranking information
@@ -37,12 +30,17 @@ export function useNFTPerformance(address?: Address) {
   const [error, setError] = useState<Error | null>(null);
 
   // Get user's performance data
-  const { data: performance } = useReadContract({
+
+  console.log(performanceNftConfig.address,"pre ass");
+  const { data: performance, error: performanceError } = useReadContract({
     ...performanceNftConfig,
     functionName: "userPerformance",
-    args: [address],
+    args: [address as Address],
     config: wagmiConfig,
+    // enabled: !!address, // Only run query if address exists
   });
+
+  console.log('Raw Performance Data:', performance);
 
   // Get user's NFT token ID
   const { data: tokenId } = useReadContract({
@@ -53,13 +51,6 @@ export function useNFTPerformance(address?: Address) {
   });
 
   // Get NFT metadata
-
-  //   struct NFTMetadata {
-//     uint8 level;
-//     uint256 qualityScore;
-//     uint256 lastEvolution;
-//     string baseURI;
-// }
   const { data: nftMetadata } = useReadContract({
     ...performanceNftConfig,
     functionName: "nftMetadata",
@@ -69,9 +60,20 @@ export function useNFTPerformance(address?: Address) {
 
   // Process and combine the data
   useEffect(() => {
-    if (!address || !performance) {
+    if (!address) {
       setPerformanceData(null);
       setIsLoading(false);
+      return;
+    }
+
+    if (performanceError) {
+      setError(new Error(`Failed to fetch performance: ${performanceError.message}`));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!performance) {
+      setIsLoading(true);
       return;
     }
 
@@ -84,15 +86,13 @@ export function useNFTPerformance(address?: Address) {
       } as const;
 
       const performanceArray = performance as bigint[];
+      console.log(performanceArray,"performance");
       const currentLevel = Number(performanceArray[PERFORMANCE_DATA_MAPPING.CURRENT_LEVEL]);
       
       const processedData: UserPerformanceData = {
         tasksCompleted: performanceArray[PERFORMANCE_DATA_MAPPING.TASKS_COMPLETED],
-        totalQualityScore: performanceArray[PERFORMANCE_DATA_MAPPING.TOTAL_QUALITY_SCORE],
-        averageQualityScore: performanceArray[PERFORMANCE_DATA_MAPPING.AVERAGE_QUALITY_SCORE],
+        lastUpdateBlock: performanceArray[PERFORMANCE_DATA_MAPPING.LAST_UPDATE_BLOCK],
         currentLevel,
-        highestQualityScore: performanceArray[PERFORMANCE_DATA_MAPPING.HIGHEST_QUALITY_SCORE],
-        consecutiveHighScores: performanceArray[PERFORMANCE_DATA_MAPPING.CONSECUTIVE_HIGH_SCORES],
         tokenId: tokenId ? BigInt(tokenId.toString()) : undefined,
         levelTitle: levelTitles[currentLevel as 1 | 2 | 3 | 4]
       };
@@ -103,15 +103,15 @@ export function useNFTPerformance(address?: Address) {
     } finally {
       setIsLoading(false);
     }
-  }, [address, performance, tokenId, nftMetadata]);
+  }, [address, performance, performanceError, tokenId, nftMetadata]);
+  console.log(performance,"pre");
 
   // Helper function to get evolution thresholds
   const getEvolutionThresholds = () => ({
-    ROOKIE_THRESHOLD: BigInt(5),
-    INTERMEDIATE_THRESHOLD: BigInt(20),
-    EXPERT_THRESHOLD: BigInt(50),
-    MASTER_THRESHOLD: BigInt(100),
-    MIN_QUALITY_SCORE: BigInt(70)
+    LEVEL_1_THRESHOLD: BigInt(5),
+    LEVEL_2_THRESHOLD: BigInt(10),
+    LEVEL_3_THRESHOLD: BigInt(15),
+    LEVEL_4_THRESHOLD: BigInt(20)
   });
 
   // Calculate progress to next level
@@ -123,11 +123,11 @@ export function useNFTPerformance(address?: Address) {
 
     switch (performanceData.currentLevel) {
       case 1:
-        return Number((tasksCompleted * BigInt(100)) / thresholds.INTERMEDIATE_THRESHOLD);
+        return Number((tasksCompleted * BigInt(100)) / thresholds.LEVEL_2_THRESHOLD);
       case 2:
-        return Number((tasksCompleted * BigInt(100)) / thresholds.EXPERT_THRESHOLD);
+        return Number((tasksCompleted * BigInt(100)) / thresholds.LEVEL_3_THRESHOLD);
       case 3:
-        return Number((tasksCompleted * BigInt(100)) / thresholds.MASTER_THRESHOLD);
+        return Number((tasksCompleted * BigInt(100)) / thresholds.LEVEL_4_THRESHOLD);
       case 4:
         return 100;
       default:
@@ -144,6 +144,3 @@ export function useNFTPerformance(address?: Address) {
     nftMetadata
   };
 }
-
-// bafkr6id4a246tmyoc7uwm6kxnphswlkwwfskwwriaxhssyz3c3nmhon6vm
-//bafkr6ib2fy7qm2g7bul7ixpobu7gfgrfszxpfgj3uoth373c5qxrwaonbm

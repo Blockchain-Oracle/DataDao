@@ -2,10 +2,10 @@
 
 # Configuration
 RPC_URL="https://auto-evm.taurus.autonomys.xyz/ws"
-PRIVATE_KEY="0x43e93d2b458a7b79518f6ab2ab26150899969193dde37c99edca68970921ea15"
+PRIVATE_KEY=""
 TOKEN_ADDRESS="0xF3A7b4Bc6F72f2490dA7b9BCd8CE6b34A1A6335c"
-NFT_ADDRESS="0x043Ba74ADfB67C23dbCCb52b3007E15dFe962320"
-PLATFORM_ADDRESS="0xAae9C0dF6dF1A2274A3B4cE44BE3F34f381a164d"
+NFT_ADDRESS="0x3EB25D5ef4445f83e6d7c5F1B9641c05f55D7799"
+PLATFORM_ADDRESS="0x7dd2C463B30556054Bc4Cf792a40032EA8163304"
 
 # Additional addresses
 USER1="0xc75CB6f74819D36CB07f2eE9690C5c6D585E9a89"
@@ -40,10 +40,10 @@ get_current_time() {
 }
 
 # # Set platform address in NFT contract
-# echo "Setting platform address in NFT contract..."
-# cast send --rpc-url $RPC_URL --private-key $PRIVATE_KEY $NFT_ADDRESS \
-#     "setDataLabelingPlatform(address)" $PLATFORM_ADDRESS
-# handle_error "Failed to set platform address"
+echo "Setting platform address in NFT contract..."
+cast send --rpc-url $RPC_URL --private-key $PRIVATE_KEY $NFT_ADDRESS \
+    "setDataLabelingPlatform(address)" $PLATFORM_ADDRESS
+handle_error "Failed to set platform address"
 
 # Mint tokens and handle deposits for each user
 INITIAL_MINT="1000000000000000000000" # 1000 tokens with 18 decimals

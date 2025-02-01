@@ -13,7 +13,7 @@ contract DataLabelingTest is Test {
     address NFTPerformance;
     address User1 = makeAddr("User1");
     address User2 = makeAddr("User2");
-    string private constant BASE_ENDPOINT="localhost:3000/api/nft/";
+    string private constant BASE_ENDPOINT = "localhost:3000/api/nft/";
 
     event TokensDeposited(address indexed user, uint256 indexed amount);
     event TaskCreated(
@@ -47,12 +47,12 @@ contract DataLabelingTest is Test {
     function setUp() public {
         token = new ERC20Mock();
         NFTPerformance = address(new PerformanceNFT(BASE_ENDPOINT));
-        dataLabelingPlatform = new DataLabelingPlatform(address(token),NFTPerformance);
+        dataLabelingPlatform = new DataLabelingPlatform(address(token), NFTPerformance);
     }
 
     function test_constructor_revert_if_token_address_is_zero() public {
         vm.expectRevert(DataLabelingPlatform.DataLabelingPlatform__InvalidTokenAddress.selector);
-        new DataLabelingPlatform(address(0),NFTPerformance);
+        new DataLabelingPlatform(address(0), NFTPerformance);
     }
 
     function test_DataLabel_Cant_Receive_ETH() public {

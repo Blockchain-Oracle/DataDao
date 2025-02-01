@@ -14,11 +14,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAccount } from "wagmi";
-import { useRouter } from "next/navigation";
+// import { useAccount } from "wagmi";
+// import { useRouter } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 
 const sidebarNavItems = [
@@ -71,14 +71,14 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { isConnected } = useAccount();
-  const router = useRouter();
+  // const { isConnected } = useAccount();
+  // const router = useRouter();
   
-  useEffect(() => {
-    if (!isConnected) {
-      router.push("/");
-    }
-  }, [isConnected, router]);
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     router.push("/");
+  //   }
+  // }, [isConnected, router]);
 
   return (
     <ThemeProvider

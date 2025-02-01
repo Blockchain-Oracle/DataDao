@@ -4,7 +4,7 @@
 PRIVATE_KEY=""
 RPC_URL="https://auto-evm.taurus.autonomys.xyz/ws"
 VERIFIER_URL="https://blockscout.taurus.autonomys.xyz/api/"
-BASE_URI="https://vercel.com/blockchain-oracles-projects/data-dao/api/nft"
+BASE_URI="https://data-dao.vercel.app/api/nft"
 
 # Clean and rebuild
 echo "Cleaning and rebuilding..."
