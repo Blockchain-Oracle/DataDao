@@ -39,24 +39,26 @@ export const config = getDefaultConfig({
   projectId:
     process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "YOUR_PROJECT_ID",
   chains: [
-    localAnvil, // Add local chain first
+    // Add local chain first
     // mainnet,
     // polygon,
     // optimism,
     // arbitrum,
     // base,
     tarus,
+    localAnvil, 
   ],
   ssr: true,
 });
 
 // Wagmi config
 export const wagmiConfig = createConfig({
-  chains: [localAnvil,  tarus],
+  chains: [tarus,localAnvil],
   transports: {
+    [tarus.id]: http(),
     [localAnvil.id]: http(LOCAL_RPC_URL),
     // [mainnet.id]: http(),
     // [sepolia.id]: http(),
-    [tarus.id]: http(),
+    
   },
 });
