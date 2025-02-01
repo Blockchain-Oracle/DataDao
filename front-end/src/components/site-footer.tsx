@@ -7,16 +7,16 @@ export function SiteFooter() {
         <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
           Built by{" "}
           <a
-            href="https://github.com/yourusername"
+            href="https://github.com/Blockchain-Oracle"
             target="_blank"
             rel="noreferrer"
             className="font-medium underline underline-offset-4"
           >
-            Your Project Name
+       Blockchain Oracle:DaoData
           </a>
           . The source code is available on{" "}
           <a
-            href="https://github.com/yourusername/project"
+            href="https://github.com/Blockchain-Oracle/DataDao"
             target="_blank"
             rel="noreferrer"
             className="font-medium underline underline-offset-4"
@@ -27,7 +27,7 @@ export function SiteFooter() {
         </p>
         <div className="flex items-center space-x-1">
           <a
-            href="https://github.com/yourusername/project"
+            href="https://github.com/Blockchain-Oracle/DataDao"
             target="_blank"
             rel="noreferrer"
             className="rounded-full p-2 hover:bg-accent"
