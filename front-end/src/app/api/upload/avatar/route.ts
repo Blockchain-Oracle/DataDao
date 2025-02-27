@@ -7,18 +7,36 @@ if (!apiKey) {
 }
 
 export async function POST(req: Request) {
+  // Add CORS headers
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
+  // Handle OPTIONS request for CORS preflight
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No file provided" },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
     // Initialize Auto Drive client
     const driveClient = createAutoDriveApi({
       apiKey,
-      network: "taurus"
+      network: "taurus",
     });
 
     // Convert File to Buffer
@@ -37,18 +55,21 @@ export async function POST(req: Request) {
 
     // Upload to Auto Drive with compression
     const cid = await uploadFile(driveClient, genericFile, {
-      compression: true
+      compression: true,
     });
 
-    return NextResponse.json({
-      cid: cid.toString(),
-      url: `/api/cid/image/${cid}`,
-    });
+    return NextResponse.json(
+      {
+        cid: cid.toString(),
+        url: `/api/cid/image/${cid}`,
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error("Error uploading avatar:", error);
     return NextResponse.json(
       { error: "Failed to upload avatar" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
