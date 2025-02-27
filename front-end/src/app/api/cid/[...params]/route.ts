@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TaskMetadata } from "@/types/task";
-import { createAutoDriveApi, downloadFile } from '@autonomys/auto-drive';
+import { createAutoDriveApi, downloadFile } from "@autonomys/auto-drive";
+// import { headers } from "next/headers";
 
 const detectFileType = async (arrayBuffer: ArrayBuffer): Promise<string> => {
   const bytes = [...new Uint8Array(arrayBuffer.slice(0, 4))]
@@ -34,11 +35,11 @@ const detectFileType = async (arrayBuffer: ArrayBuffer): Promise<string> => {
 
 const apiKey = process.env.AUTO_DRIVE_API_KEY;
 if (apiKey == undefined) {
-throw new Error("AUTO_DRIVE_API_KEY is not set");
+  throw new Error("AUTO_DRIVE_API_KEY is not set");
 }
 
 async function fetchFromAutoDrive(cid: string) {
-  const api = createAutoDriveApi({ apiKey,network:"taurus" });
+  const api = createAutoDriveApi({ apiKey, network: "taurus" });
   console.log(cid, "cid");
   try {
     const stream = await downloadFile(api, cid);
@@ -48,7 +49,7 @@ async function fetchFromAutoDrive(cid: string) {
     }
     return file;
   } catch (error) {
-    console.error('Error downloading file:', error);
+    console.error("Error downloading file:", error);
     throw new Error("CID not found");
   }
 }
@@ -68,7 +69,16 @@ async function processMetadata(cid: string): Promise<NextResponse> {
       }));
     }
 
-    return NextResponse.json(metadata);
+    // Add CORS headers
+    return new NextResponse(JSON.stringify(metadata), {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*", // Replace with your domain in production
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
     console.error("Error processing metadata:", error);
     return NextResponse.json(
@@ -80,13 +90,20 @@ async function processMetadata(cid: string): Promise<NextResponse> {
 
 async function processImage(cid: string): Promise<NextResponse> {
   try {
-    const fileBuffer = await fetchFromAutoDrive(cid) ;
+    const fileBuffer = await fetchFromAutoDrive(cid);
     const fileType = await detectFileType(fileBuffer);
 
     if (!fileType.startsWith("image/")) {
       return NextResponse.json(
         { error: "Invalid image format" },
-        { status: 400 }
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
       );
     }
 
@@ -94,6 +111,9 @@ async function processImage(cid: string): Promise<NextResponse> {
       status: 200,
       headers: {
         "Content-Type": fileType,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
     });
   } catch (error) {
@@ -105,6 +125,19 @@ async function processImage(cid: string): Promise<NextResponse> {
   }
 }
 
+// Add OPTIONS handler to the main route handler
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const pathname = req.nextUrl.pathname;
@@ -113,7 +146,17 @@ export async function GET(req: NextRequest) {
     const cid = segments[1];
 
     if (!cid) {
-      return NextResponse.json({ error: "CID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "CID is required" },
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
+      );
     }
 
     if (type === "metadata") {
@@ -127,10 +170,16 @@ export async function GET(req: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Error processing request:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
     );
   }
 }
